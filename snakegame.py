@@ -14,14 +14,20 @@ time.sleep(1)
 
 x = 3
 y = 3
+
 sense = SenseHat()
 sense.clear()
 
-found = False;
+snake = []
+colour = [255, 0, 255]
+snake.append([x,y])
+turn = 0
+
+found = False
 devices = [InputDevice(fn) for fn in list_devices()]
 for dev in devices:
   if dev.name == 'Raspberry Pi Sense HAT Joystick':
-    found = True;
+    found = True
     break
 if not(found):
   print('Raspberry Pi Sense HAT Joystick not found. Aborting ...')
@@ -50,14 +56,27 @@ def pushed_right(event):
     if event.action != ACTION_RELEASED:
         x = clamp(x + 1)
 
+def pushed_center(event):
+    global turn
+    turn = 1
+    if event.action != ACTION_RELEASED:
+       sense.clear()
+
 def refresh():
+    global x,y
     sense.clear()
-    sense.set_pixel(x, y, 255, 255, 255)
+    snake.append([x,y])
+    if len(snake) > 3:
+        snake.pop(0)
+    for pixel in snake:
+        print pixel
+        sense.set_pixel(pixel[0], pixel[1], colour)
 
 sense.stick.direction_up = pushed_up
 sense.stick.direction_down = pushed_down
 sense.stick.direction_left = pushed_left
 sense.stick.direction_right = pushed_right
+sense.stick.direction_middle = pushed_center
 sense.stick.direction_any = refresh
 refresh()
 pause()
